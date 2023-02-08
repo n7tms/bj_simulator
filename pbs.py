@@ -7,7 +7,7 @@ import math
 import time
 
 simulations = 1000000
-num_decks = 4
+num_decks = 1
 shuffle_perc = 75
 
 def simulate(queue, batch_size):
@@ -16,10 +16,7 @@ def simulate(queue, batch_size):
     def new_deck():
         std_deck = [
             2,3,4,5,6,7,8,9,10,10,10,10,11,
-            2,3,4,5,6,7,8,9,10,10,10,10,11,
-            2,3,4,5,6,7,8,9,10,10,10,10,11,
-            2,3,4,5,6,7,8,9,10,10,10,10,11,
-        ]
+        ] * 4
 
         std_deck = std_deck * num_decks
         random.shuffle(std_deck)
@@ -64,6 +61,7 @@ def simulate(queue, batch_size):
         
     # starting deck
     deck = new_deck()
+    print(deck)
 
     # play hands
     win = 0

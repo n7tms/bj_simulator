@@ -11,8 +11,19 @@
 
 from itertools import combinations, product
 import random
+import json
 
 number_of_decks = 1
+strategy = "{16:['S','S','S','S','S','H','H','Sr','Sr','Sr']}"
+
+def parse_strategy(filename: str):
+    whole_file = ""
+
+    with open(filename, 'r') as fn:
+        data = json.load(fn)
+
+    return data['Hard'],data['Soft'],data['Split'],data['Bets'],data['Settings'],
+
 
 
 def build_cards(nod):
@@ -31,5 +42,9 @@ def shuffle(d):
     return deck
 
 
-deck = shuffle(build_cards(number_of_decks))
-print(deck)
+# deck = shuffle(build_cards(number_of_decks))
+
+# hards, softs, splits, bets, settings = parse_strategy("basic_strategy.pbs")
+hards, softs, splits, bets, settings = parse_strategy("small_strategy.pbs")
+print(bets)
+print(settings["Decks"])
