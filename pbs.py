@@ -1,9 +1,12 @@
+# Python Blackjack Simulator
+# https://www.youtube.com/watch?v=IPMcV_IXtX4
+
 import random
 import multiprocessing
 import math
 import time
 
-simulations = 100000
+simulations = 1000000
 num_decks = 4
 shuffle_perc = 75
 
@@ -66,7 +69,7 @@ def simulate(queue, batch_size):
     win = 0
     draw = 0
     lose = 0
-    for i in range(0,simulations):
+    for i in range(0,batch_size):
         if (float(len(deck)) / (52 * num_decks)) * 100 < shuffle_perc:
             deck = new_deck()
         
@@ -79,13 +82,43 @@ def simulate(queue, batch_size):
         if result == -1:
             lose += 1
     
-    print(f"Simulations: {simulations}")
-    print(f"wins: {win}")
-    print(f"draws: {draw}")
-    print(f"lose: {lose}")
+    queue.put([win,draw,lose])
 
 
-simulate(0,0)
+start_time = time.time()
+
+cpus = multiprocessing.cpu_count()
+print(cpus)
+batch_size = int(math.ceil(simulations / float(cpus)))
+
+queue = multiprocessing.Queue()
+processes = []
+
+for i in range(0,cpus):
+    process = multiprocessing.Process(target=simulate, args=(queue, batch_size))
+    processes.append(process)
+    process.start()
+
+for proc in processes:
+    proc.join()
+
+finish_time = time.time() - start_time
+
+win,draw,lose = 0,0,0
+
+for i in range(0,cpus):
+    results = queue.get()
+    win += results[0]
+    draw += results[1]
+    lose += results[2]
+
+
+print(f"Simulations: {simulations}")
+print(f"wins: {win}")
+print(f"draws: {draw}")
+print(f"lose: {lose}")
+print(f"execution time: {finish_time:.2f}")
+
 
 
 
