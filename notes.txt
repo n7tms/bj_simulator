@@ -1,0 +1,67 @@
+does the dealer have a blackjack and player does not? Lose (-bet)
+Does the player have a blackjack and the dealer does not? Win (+(bet x 1.5))
+Does player AND dealer have a blackjack? draw (0)
+
+Get the dealer's first card
+Is it 11?
+Insurance?
+Does the dealer have 21? (This question, after insurance covers the case of the first card being 10.)
+    Yes: Does the player also have 21? 
+        Yes: draw (0)
+        No: lose (-bet)
+    No: continue
+
+Get the players cards
+Is the sum of the players cards > 21?
+    Yes: is one of the cards 11?
+        Yes: change it to 1
+
+tuple: are the players cards in "split"?
+    Yes: Is the split flag True?
+        Do nothing (can't split twice)
+    No: Perform the appropriate action
+
+Is one of the cards 11 (soft)?
+    Yes: perform approriate action
+    No: continue
+
+Is the players cards in hard?
+    Yes: perform appropriate action
+
+Is the sum of the players cards > 21?
+    Yes: is one of the cards 11?
+        Yes: change it to 1
+
+Is there more than three numbers in the players tuple?
+    Yes: Add two that are not 11
+
+
+
+# Basic Strategy
+# https://www.blackjackapprenticeship.com/blackjack-strategy-charts/
+#
+# S = stand
+# H = hit
+# Sr = surrender if possible; otherwise hit
+# D = double
+# Ds = double if possible; otherwise stand
+# Da = split if double-after-split allowed; otherwise, don't split
+#
+
+
+
+
+# Surrender?
+Is surrender allowed?
+    Yes: 
+
+# Split?
+
+
+# Double?
+
+
+# Hit?
+
+
+

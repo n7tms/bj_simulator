@@ -20,11 +20,13 @@
     },
 
     "Bets": [5,15,30,60],
-    
+
     "Settings": {
-        "Hands": 1000,
-        "Decks": 6,
-        "DAS": "Y"
+        "Hands": 3,
+        "Decks": 1,
+        "DAS": "Y",
+        "Surrender": "N",
+        "ShufflePercent": 75
     }
 }
 
