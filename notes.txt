@@ -50,18 +50,24 @@ Is there more than three numbers in the players tuple?
 
 
 
+Potential Blocks of Code
+-------------------------
+Deal hands
+    Did dealer and player get BJ?: bet * 0
+    Did dealer get BJ?: bet * -1
+    Did player get BJ?: bet * 1.5
 
-# Surrender?
-Is surrender allowed?
-    Yes: 
-
-# Split?
-
-
-# Double?
-
-
-# Hit?
-
+Play Player hand
+    def player(player_hand, dealer_card, split_already) -> p_outcome (val of hand; 0=BJ)
+    in outcome logic, multiply bet by outcome
+Play Dealer hand
+    def dealer(dealer_hand) -> d_outcome (val of hand; 0=BJ)
+Outcome logic
+    Compare hands
+        p_outcome == d_outcome: bet * 0
+        p_outcome > d_outcome: bet * 1
+        p_outcome < d_outcome: bet * -1
+        
+    
 
 
