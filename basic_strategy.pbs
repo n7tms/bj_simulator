@@ -43,13 +43,13 @@
         "(2, 2)":["Da","Da","Y","Y","Y","Y","H","H","H","H"]
     },
 
-    "Bets": [5,11,23,47,95,191,383,767],
+    "Bets": [1,2,4,8,16,32],
 
     "Settings": {
-        "Hands": 100,
+        "Rounds": 10000,
         "Decks": 6,
         "DAS": "Y",
         "Surrender": "N",
-        "ShufflePercent": 75
+        "MaxPenetration": 75
     }
 }
