@@ -12,6 +12,8 @@
 from itertools import combinations, product
 import random
 import json
+import csv
+import time
 
 hards, softs, splits, bets, settings = None,None,None,None,None
 deck = []
@@ -47,18 +49,18 @@ def play_hand(bet: int, split: bool, dealer: list, player: list) -> int:    # re
 
     global deck
 
-    print("Dealer:",dealer)
-    print("Player:",player)
+    # print("Dealer:",dealer)
+    # print("Player:",player)
 
     getting_cards = True
     num_of_cards = 2
+    out1,out2 = 0,0
+
     while getting_cards:
         getting_cards = False
-        # Dealer card
-        d = dealer[0]
 
-        print("Dealer", sum(dealer))
-        print("Player",sum(player))
+        # print("Dealer", sum(dealer))
+        # print("Player",sum(player))
 
         # Dealer Blackjack?
         if sum(dealer) == 21:
@@ -71,30 +73,84 @@ def play_hand(bet: int, split: bool, dealer: list, player: list) -> int:    # re
         if sum(player) == 21 and num_of_cards == 2:
             return bet * 1.5
 
+        # Bust?
+        if sum(player) > 21:
+            return -bet
+        
+        # If the player has more than 3 cards, combine them
+        if len(player) > 2:
+            player = sorted(player)
+            x = player.pop(0) + player.pop(0)
+            player.insert(0,x)
+            # print(player)
+
         action = None
-        player_t = str(tuple(player))
-        if player_t in splits:
+        player_t = str(tuple(sorted(tuple(player))))
+        if player_t in splits and split == False and num_of_cards == 2:
             action = splits[player_t][dealer[0]-2]
         elif player_t in softs:
             action = softs[player_t][dealer[0]-2]
         elif str(sum(player)) in hards:
             action = hards[str(sum(player))][dealer[0]-2]
         
-        print("action:",action)
+        # print("action:",action)
+        match action:
+            case "S":   # Stand
+                getting_cards = False
+            case "H":   # Hit
+                player.append(deck.pop(0))
+                if sum(player) > 21 and 11 in player:
+                    player[player.index(11)] = 1
+                num_of_cards += 1
+                getting_cards = True
+            case "Sr":  # Surrender, or hit
+                if settings["Surrender"] == 'Y':
+                    getting_cards = False
+                else:
+                    player.append(deck.pop(0))
+                    getting_cards = True
+                    num_of_cards += 1
+            case "D":   # Double
+                if num_of_cards == 2 and ((split == True and settings["DAS"] == 'Y') or split == False):
+                    player.append(deck.pop(0))
+                    getting_cards = False
+                    num_of_cards += 1
+                    bet += bet
+                else:   # Can't double; just hit
+                    player.append(deck.pop(0))
+                    getting_cards = True
+                    num_of_cards += 1
 
-        # Surrender?
-
-        # Split?
-        # outcome1 = play_hand(5,True)
-        # outcome2 = play_hand(5,True)
-
-        # Double?
-
-        # Hit?
-        # player.append(deck.pop(0))
-        # getting_cards = True
+            case "Ds":  # Double, or stand
+                if num_of_cards == 2:   # double allowed
+                    player.append(deck.pop(0))
+                    getting_cards = False
+                    num_of_cards += 1
+                    bet += bet
+                else:
+                    getting_cards = False
+            case "Y":   # Split
+                p1 = [player[0]]
+                p2 = [player[1]]
+                p1.append(deck.pop(0))
+                p2.append(deck.pop(0))
+                out1 = play_hand(bet,True,dealer,p1)
+                out2 = play_hand(bet,True,dealer,p2)
+                return out1 + out2
+            case "Da":  # Split if double after split allowed
+                # TODO currently treating this like a normal split
+                p1 = [player[0]]
+                p2 = [player[1]]
+                p1.append(deck.pop(0))
+                p2.append(deck.pop(0))
+                out1 = play_hand(bet,True,dealer,p1)
+                out2 = play_hand(bet,True,dealer,p2)
+                return out1 + out2
+            case _:
+                pass
+              
     
-    if sum(player) > 21:
+    if sum(player) > 21 or (action == 'Sr' and getting_cards == False):
         return -bet
 
     # Play the dealer's hand
@@ -111,7 +167,7 @@ def play_hand(bet: int, split: bool, dealer: list, player: list) -> int:    # re
     elif sum(player) > 21 or (sum(dealer) < 22 and sum(dealer) > sum(player)):
         return -bet
     else:
-        return bet * 2
+        return bet
 
 
 
@@ -121,9 +177,11 @@ def simulate():
 
     global deck
 
-    bet_index = 0
+    
+    bet_count = 0
     winnings = 0
-    max_bet_index = 0
+    max_bet_count = 0
+    nextbet = 0
     wins = 0
     losses = 0
     draws = 0
@@ -132,9 +190,9 @@ def simulate():
     for h in range(0,settings["Hands"]):
     # for h in range(0,2):
         if (float(len(deck)) / (52 * settings["Decks"])) * 100 < settings["ShufflePercent"]:
-            deck = build_deck()
+            deck = build_deck(settings["Decks"])
 
-        print("\nHand: ",h)
+        # print("\nHand: ",h)
         dealer = []
         player = []
 
@@ -143,19 +201,23 @@ def simulate():
         player.append(deck.pop(0))
         dealer.append(deck.pop(0))
 
-        outcome = play_hand(bets[bet_index],False,dealer,player)
+        outcome = play_hand(bets[nextbet],False,dealer,player)
         winnings += outcome
         if outcome < 0:
             losses += 1
-            bet_index +=1
-            max_bet_index = max([bet_index,max_bet_index])
-            if bet_index >= len(bets):
-                nextbet = bet_index[-1]
+            bet_count +=1
+            max_bet_count = max([bet_count,max_bet_count])
+            if bet_count >= len(bets):
+                # nextbet = len(bets) - 1
+                nextbet = 0
+            else:
+                nextbet = bet_count
         elif outcome == 0:
             draws += 1
         elif outcome > 0:
             wins += 1
-            bet_index = 0
+            bet_count = 0
+            nextbet = 0
 
 
     # display the summary
@@ -167,7 +229,7 @@ def simulate():
     print("Loss:",losses)
     print("Draw:",draws)
     print("Winnings:",winnings)
-    print("Losing Streak:",max_bet_index)
+    print("Losing Streak:",max_bet_count)
     print("=========================================")
 
 
@@ -177,7 +239,17 @@ def simulate():
 hards, softs, splits, bets, settings = parse_strategy("basic_strategy.pbs")
 
 deck = build_deck(settings["Decks"])
-print(deck)
+# print(deck)
 
+start_time = time.time()
 simulate()
+duration = time.time() - start_time
+print(f"Execution time: {duration:.2f}")
 
+
+# TODO write summary to a csv file so we can use Excel to graph it.
+
+# Potential bets
+# [5,15,30,60]
+# [5,15,30,60,60,60,180,240,480,1000]
+# [5,11,23,47,95,191,383,767]
