@@ -49,6 +49,7 @@ def play_hand(bet: int, split: bool, dealer: list, player: list) -> int:    # re
 
     global deck
 
+
     # print("Dealer:",dealer)
     # print("Player:",player)
 
@@ -70,11 +71,11 @@ def play_hand(bet: int, split: bool, dealer: list, player: list) -> int:    # re
                 return -bet # only the dealer got blackjack; return lose
         
         # Player Blackjack?
-        if sum(player) == 21 and num_of_cards == 2:
+        if sum(player) == 21 and num_of_cards == 2 and split == False:
             return bet * 1.5
 
         # Bust?
-        if sum(player) > 21:
+        if sum(player) > 21 and num_of_cards > 2:
             return -bet
         
         # If the player has more than 3 cards, combine them
@@ -136,7 +137,8 @@ def play_hand(bet: int, split: bool, dealer: list, player: list) -> int:    # re
                 p2.append(deck.pop(0))
                 out1 = play_hand(bet,True,dealer,p1)
                 out2 = play_hand(bet,True,dealer,p2)
-                return out1 + out2
+                bet = out1 + out2
+                getting_cards = False
             case "Da":  # Split if double after split allowed
                 # TODO currently treating this like a normal split
                 p1 = [player[0]]
@@ -148,13 +150,16 @@ def play_hand(bet: int, split: bool, dealer: list, player: list) -> int:    # re
                 return out1 + out2
             case _:
                 pass
-              
-    
+
+# TODO When player splits, both hands need to play out, then the dealer's hand plays, then an outcome is determined.
+# TODO Currently, first hand plays, dealer plays, outcome, second hand, dealer plays, outcome
+# TODO Wrong!
+
     if sum(player) > 21 or (action == 'Sr' and getting_cards == False):
         return -bet
 
     # Play the dealer's hand
-    while sum(dealer) < 17:
+    while sum(dealer) < 17 and split == False:
         if sum(dealer) < 17:
             dealer.append(deck.pop(0))
         if sum(dealer) > 21 and 11 in dealer:
@@ -195,6 +200,10 @@ def simulate():
         # print("\nHand: ",h)
         dealer = []
         player = []
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        deck = [11,9,11,3,10,9,4,5,6]
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         player.append(deck.pop(0))
         dealer.append(deck.pop(0))
@@ -247,7 +256,7 @@ duration = time.time() - start_time
 print(f"Execution time: {duration:.2f}")
 
 
-# TODO write summary to a csv file so we can use Excel to graph it.
+# TODO write summary to a csv file so we can use Excel to graph it....or PyPlot?
 
 # Potential bets
 # [5,15,30,60]
