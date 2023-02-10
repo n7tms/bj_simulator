@@ -10,10 +10,10 @@
 #   - total cumulative bet
 
 from itertools import combinations, product
-import random
 import json
 import csv
 import time
+import cards
 
 hards, softs, splits, bets, settings = None,None,None,None,None
 deck = []
@@ -23,21 +23,6 @@ def parse_strategy(filename: str):
         data = json.load(fn)
     return data['Hard'],data['Soft'],data['Split'],data['Bets'],data['Settings']
 
-
-def build_deck(number_of_decks):
-    """build a stack of cards based on the number of decks specified"""
-    values = [2,3,4,5,6,7,8,9,10,10,10,10,11]
-
-    # TODO At some future date, I'll incorporate card suits; but for now, they are not needed.
-    # suits = ['Spade','Heart','Club','Diamond']
-    # a = list(product(values,suits)) * nod
-
-    # Build the shoe; 4 different suits * the number of decks specified.
-    shoe = values * 4 * number_of_decks
-
-    # Shuffle everything together
-    random.shuffle(shoe)
-    return shoe
 
 def play_player(player_hand: list, dealer_card: int, split_already: bool) -> int:
     """Plays the players hand; returns the value of the hand"""
@@ -70,7 +55,7 @@ def play_player(player_hand: list, dealer_card: int, split_already: bool) -> int
             case "S":   # Stand
                 getting_cards = False
             case "H":   # Hit
-                player_hand.append(deck.pop(0))
+                player_hand.append(next(deck))
                 if sum(player_hand) > 21 and 11 in player_hand:
                     player_hand[player_hand.index(11)] = 1
                 num_of_cards += 1
@@ -79,23 +64,23 @@ def play_player(player_hand: list, dealer_card: int, split_already: bool) -> int
                 if settings["Surrender"] == 'Y':
                     getting_cards = False
                 else:
-                    player_hand.append(deck.pop(0))
+                    player_hand.append(next(deck))
                     getting_cards = True
                     num_of_cards += 1
             case "D":   # Double
                 if num_of_cards == 2 and ((split_already == True and settings["DAS"] == 'Y') or split_already == False):
-                    player_hand.append(deck.pop(0))
+                    player_hand.append(next(deck))
                     getting_cards = False
                     num_of_cards += 1
                     doubled = 2
                 else:   # Can't double; just hit
-                    player_hand.append(deck.pop(0))
+                    player_hand.append(next(deck))
                     getting_cards = True
                     num_of_cards += 1
 
             case "Ds":  # Double, or stand
                 if num_of_cards == 2:   # double allowed
-                    player_hand.append(deck.pop(0))
+                    player_hand.append(next(deck))
                     getting_cards = False
                     num_of_cards += 1
                     doubled = 2
@@ -122,7 +107,7 @@ def play_dealer(dealer_hand: list) -> int:
     dealer_sum = sum(dealer_hand)
     while dealer_sum < 17:
         if dealer_sum < 17:
-            dealer_hand.append(deck.pop(0))
+            dealer_hand.append(next(deck))
         if dealer_sum > 21 and 11 in dealer_hand:
             dealer_hand[dealer_hand.index(11)] = 1
         dealer_sum = sum(dealer_hand)
@@ -137,10 +122,10 @@ def play_hand(bet: int) -> int:
     # Deal the cards
     dealer = []
     player = []
-    player.append(deck.pop(0))
-    dealer.append(deck.pop(0))
-    player.append(deck.pop(0))
-    dealer.append(deck.pop(0))
+    player.append(next(deck))
+    dealer.append(next(deck))
+    player.append(next(deck))
+    dealer.append(next(deck))
 
     # Does the dealer AND the player have blackjack?
     if sum(dealer) == 21 and sum(player) == 21:
@@ -160,8 +145,8 @@ def play_hand(bet: int) -> int:
 
     player_t = str(tuple(sorted(tuple(player))))
     if player_t in splits and (splits[player_t][dealer[0]-2] == 'Y' or (splits[player_t][dealer[0]-2] == 'Da' and settings["DAS"] == 'Y')):
-        player1 = [player[0],deck.pop(0)]
-        player2 = [player[1],deck.pop(0)]
+        player1 = [player[0],next(deck)]
+        player2 = [player[1],next(deck)]
         p_out1,p_dub1 = play_player(player1,dealer[0],True)
         p_out2,p_dub2 = play_player(player2,dealer[0],True)
     else:
@@ -199,15 +184,9 @@ def simulate():
     draws = 0
 
     for h in range(0,settings["Rounds"]):
-    # for h in range(0,2):
-        if (float(len(deck)) / (52 * settings["Decks"])) * 100 < settings["MaxPenetration"]:
-            deck = build_deck(settings["Decks"])
-
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         # deck = [11,9,11,3,10,9,4,2,6]
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
         outcome = play_hand(bets[nextbet])
         winnings += outcome
         if outcome < 0:
@@ -245,7 +224,7 @@ def simulate():
 # hards, softs, splits, bets, settings = parse_strategy("basic_strategy.pbs")
 hards, softs, splits, bets, settings = parse_strategy("basic_strategy.pbs")
 
-deck = build_deck(settings["Decks"])
+deck = cards.Cards(settings["Decks"],settings["MaxPenetration"])
 # print(deck)
 
 start_time = time.time()

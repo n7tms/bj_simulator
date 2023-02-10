@@ -71,6 +71,11 @@ Outcome logic
     
 
 
+# TODO write summary to a csv file so we can use Excel to graph it....or PyPlot?
+
+
 Potential Bid Sequencess
-[1,2,4,8,16,32]
 [5,15,30,60]
+[5,15,30,60,60,60,180,240,480,1000]
+[5,11,23,47,95,191,383,767]
+[1,2,4,8,16,32]
