@@ -103,26 +103,12 @@ def play_player(player_hand: list, dealer_card: int, split_already: bool) -> int
                     getting_cards = False
 
             case "Y":   # Split
-                p1 = [player[0]]
-                p2 = [player[1]]
-                p1.append(deck.pop(0))
-                p2.append(deck.pop(0))
-                out1 = play_hand(bet,True,dealer,p1)
-                out2 = play_hand(bet,True,dealer,p2)
-                bet = out1 + out2
-                getting_cards = False
+                # This case is handled before the hand is played (in play_hand())
+                pass
+
             case "Da":  # Split if double after split allowed
-                # TODO currently treating this like a normal split
-                p1 = [player[0]]
-                p2 = [player[1]]
-                p1.append(deck.pop(0))
-                p2.append(deck.pop(0))
-                out1 = play_hand(bet,True,dealer,p1)
-                out2 = play_hand(bet,True,dealer,p2)
-                return out1 + out2
-
-
-
+                # This case is handled before the hand is played (in play_hand())
+                pass
             case _:
                 pass
 
@@ -189,13 +175,13 @@ def play_hand(bet: int) -> int:
     if d_out > p_out1:
         total_outcome -= bet * p_dub1
     if d_out < p_out1:
-        total_outcome =+ bet * p_dub1
+        total_outcome += bet * p_dub1
     
     if p_out2 > 0:
         if d_out > p_out2:
-            total_outcome -= bet * p_dub1
+            total_outcome -= bet * p_dub2
         if d_out < p_out2:
-            total_outcome =+ bet * p_dub2
+            total_outcome += bet * p_dub2
 
     return total_outcome
 
@@ -218,7 +204,7 @@ def simulate():
             deck = build_deck(settings["Decks"])
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        # deck = [11,9,11,3,10,9,4,5,6]
+        # deck = [11,9,11,3,10,9,4,2,6]
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -229,8 +215,8 @@ def simulate():
             bet_count +=1
             max_bet_count = max([bet_count,max_bet_count])
             if bet_count >= len(bets):
-                # nextbet = len(bets) - 1
-                nextbet = 0
+                nextbet = len(bets) - 1
+                # nextbet = 0
             else:
                 nextbet = bet_count
         elif outcome == 0:

@@ -71,3 +71,6 @@ Outcome logic
     
 
 
+Potential Bid Sequencess
+[1,2,4,8,16,32]
+[5,15,30,60]
