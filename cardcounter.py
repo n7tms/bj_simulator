@@ -1,6 +1,7 @@
 # Card Counting Practice
 
 import cards
+import time
 
 print("Card Counting Practice")
 print("2-6: +1")
@@ -42,4 +43,26 @@ while crd_dsp < 1 or crd_dsp > 6:
             break
     print("You can display 1 to 6 cards.\n")
 
-deck = cards()
+rounds = 0
+running_count = 0
+deck = cards.Cards(1,99)
+while True:
+    rounds += 1
+    cards_to_show = []
+    for i in range(crd_dsp):
+        next_card = next(deck)
+        if next_card < 7:
+            running_count += 1
+        elif next_card > 9:
+            running_count -= 1
+        cards_to_show.append(next_card)
+    
+    print("cards: ",cards_to_show)
+    time.sleep(delay)
+    if rounds % 5 == 0:
+        print("Running count: ",running_count)
+
+    if rounds > 10:
+        print("Ending Running Count:",running_count)
+        break
+
